@@ -1,46 +1,59 @@
 # Maintainer: Urs Wolfer <uwolfer @ fwo.ch>
 
-pkgname=intellij-idea-ultimate-edition
+pkgbase='intellij-idea-ultimate-edition'
+pkgname=(intellij-idea-ultimate-edition intellij-idea-ultimate-edition-jre)
 pkgver=2016.3.2
 _buildver=163.10154.41
-pkgrel=1
+pkgrel=2
 pkgdesc="An intelligent IDE for Java, Groovy and other programming languages with advanced refactoring features intensely focused on developer productivity."
 arch=('any')
 url="https://www.jetbrains.com/idea/"
-backup=("usr/share/${pkgname}/bin/idea.vmoptions" "usr/share/${pkgname}/bin/idea64.vmoptions" "usr/share/${pkgname}/bin/idea.properties")
 license=('Commercial')
-depends=('java-environment' 'giflib' 'libxtst')
+depends=('giflib' 'libxtst')
+makedepends=('rsync')
 options=(!strip)
-source=(https://download.jetbrains.com/idea/ideaIU-$pkgver-no-jdk.tar.gz \
-        intellijidea.sh \
+source=(https://download.jetbrains.com/idea/ideaIU-$pkgver.tar.gz \
         jetbrains-idea.desktop
 )
-sha256sums=('ac861f5ed72f7ec4164c8845b985e9076cde7951bf7aab3ce2e5dae4d651d719'
-            'ed7883b33b6fa9f2e303e5549bd238ceb552ec11ca116730271a58aca685229a'
+sha256sums=('aa636eb6ad9fe048c7ec1334ca5e23abc7004c8c12f28b531c2c89a67e49ed8e'
             '83af2ba8f9f14275a6684e79d6d4bd9b48cd852c047dacfc81324588fa2ff92b'
 )
-package() {
-  cd "$srcdir"
 
-  install -d -m755 "$pkgdir"/usr/{bin,share}
-  cp -a "idea-IU-$_buildver" "$pkgdir"/usr/share/"$pkgname"
+noextract=("ideaIU-${pkgver}.tar.gz")
 
-  # make sure that all files are owned by root
-  chown -R root:root "$pkgdir"/usr/share
+build() {
+  mkdir -p "${srcdir}/vendor-package"
+  bsdtar --strip-components 1 -xf "ideaIU-${pkgver}.tar.gz" -C "${srcdir}/vendor-package"
+}
 
-  find "$pkgdir"/usr/share/"$pkgname" -type d -exec chmod 0755 {} ';'
-  find "$pkgdir"/usr/share/"$pkgname" -type f -exec chmod 0644 {} ';'
+package_intellij-idea-ultimate-edition() {
+  optdepends=(
+    'intellij-idea-ultimate-edition-jre: JetBrains custom Java Runtime (Recommended)'
+    'java-runtime: JRE - Required if intellij-idea-ultimate-edition-jre is not installed'
+  )
+  backup=("usr/share/${pkgbase}/bin/idea.vmoptions" "usr/share/${pkgbase}/bin/idea64.vmoptions" "usr/share/${pkgbase}/bin/idea.properties")
 
-  chmod +x "$pkgdir"/usr/share/"$pkgname"/bin/idea.sh
-  chmod +x "$pkgdir"/usr/share/"$pkgname"/bin/fsnotifier
-  chmod +x "$pkgdir"/usr/share/"$pkgname"/bin/fsnotifier64
+  install -d -m755 "${pkgdir}/usr/share/${pkgbase}"
+  rsync -rtl "${srcdir}/vendor-package/" "${pkgdir}/usr/share/${pkgbase}" \
+    --exclude=/jre
 
-  install -D -m755 "$srcdir"/intellijidea.sh "$pkgdir"/usr/bin/"$pkgname"
-  install -D -m644 "$srcdir"/jetbrains-idea.desktop "$pkgdir"/usr/share/applications/jetbrains-idea.desktop
-  install -D -m644 "$srcdir"/idea-IU-$_buildver/bin/idea.png "$pkgdir"/usr/share/pixmaps/"$pkgname".png
+  # create binary and desktop entry
+  install -d -m755 "${pkgdir}/usr/bin"
+  ln -s "/usr/share/${pkgbase}/bin/idea.sh" "${pkgdir}/usr/bin/${pkgbase}"
+  install -D -m644 "${srcdir}/jetbrains-idea.desktop" "${pkgdir}/usr/share/applications/jetbrains-idea.desktop"
+  install -D -m644 "${srcdir}/vendor-package/bin/idea.png" "${pkgdir}/usr/share/pixmaps/${pkgbase}.png"
 
   # workaround FS#40934
-  sed -i 's|lcd|on|'  "$pkgdir"/usr/share/"$pkgname"/bin/*.vmoptions
+  sed -i 's|lcd|on|'  "$pkgdir"/usr/share/"$pkgbase"/bin/*.vmoptions
+}
+
+package_intellij-idea-ultimate-edition-jre() {
+  pkgdesc='JRE from IntelliJ IDEA, recommended instead of a system-wide installed JRE'
+  arch=('i686' 'x86_64')
+  provides=('java-environment=8')
+
+  install -d -m755 "${pkgdir}/usr/share/${pkgbase}"
+  rsync -rtl "${srcdir}/vendor-package/jre/" "${pkgdir}/usr/share/${pkgbase}/jre"
 }
 
 # vim:set ts=2 sw=2 et:
