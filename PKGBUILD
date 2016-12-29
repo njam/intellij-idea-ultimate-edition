@@ -9,7 +9,6 @@ pkgdesc="An intelligent IDE for Java, Groovy and other programming languages wit
 arch=('any')
 url="https://www.jetbrains.com/idea/"
 license=('Commercial')
-depends=('giflib' 'libxtst')
 makedepends=('rsync')
 options=(!strip)
 source=(https://download.jetbrains.com/idea/ideaIU-$pkgver.tar.gz \
@@ -27,6 +26,7 @@ build() {
 }
 
 package_intellij-idea-ultimate-edition() {
+  depends=('giflib' 'libxtst')
   optdepends=(
     'intellij-idea-ultimate-edition-jre: JetBrains custom Java Runtime (Recommended)'
     'java-runtime: JRE - Required if intellij-idea-ultimate-edition-jre is not installed'
@@ -50,7 +50,7 @@ package_intellij-idea-ultimate-edition() {
 package_intellij-idea-ultimate-edition-jre() {
   pkgdesc='JRE from IntelliJ IDEA, recommended instead of a system-wide installed JRE'
   arch=('i686' 'x86_64')
-  provides=('java-environment=8')
+  depends=("${pkgbase}")
 
   install -d -m755 "${pkgdir}/usr/share/${pkgbase}"
   rsync -rtl "${srcdir}/vendor-package/jre/" "${pkgdir}/usr/share/${pkgbase}/jre"
