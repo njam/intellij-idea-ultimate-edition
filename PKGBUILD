@@ -3,7 +3,6 @@
 pkgbase='intellij-idea-ultimate-edition'
 pkgname=(intellij-idea-ultimate-edition intellij-idea-ultimate-edition-jre)
 pkgver=2016.3.2
-_buildver=163.10154.41
 pkgrel=2
 pkgdesc="An intelligent IDE for Java, Groovy and other programming languages with advanced refactoring features intensely focused on developer productivity."
 arch=('any')
@@ -18,11 +17,8 @@ sha256sums=('aa636eb6ad9fe048c7ec1334ca5e23abc7004c8c12f28b531c2c89a67e49ed8e'
             '83af2ba8f9f14275a6684e79d6d4bd9b48cd852c047dacfc81324588fa2ff92b'
 )
 
-noextract=("ideaIU-${pkgver}.tar.gz")
-
 build() {
-  mkdir -p "${srcdir}/vendor-package"
-  bsdtar --strip-components 1 -xf "ideaIU-${pkgver}.tar.gz" -C "${srcdir}/vendor-package"
+  mv "${srcdir}/idea-IU-"* "${srcdir}/vendor-package"
 }
 
 package_intellij-idea-ultimate-edition() {
