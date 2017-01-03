@@ -33,7 +33,7 @@ package_intellij-idea-ultimate-edition() {
   backup=("usr/share/${pkgbase}/bin/idea.vmoptions" "usr/share/${pkgbase}/bin/idea64.vmoptions" "usr/share/${pkgbase}/bin/idea.properties")
 
   install -d -m755 "${pkgdir}/usr/share/${pkgbase}"
-  cp -r "${srcdir}/vendor-package/base/." "${pkgdir}/usr/share/${pkgbase}"
+  cp -a "${srcdir}/vendor-package/base/." "${pkgdir}/usr/share/${pkgbase}"
 
   # create binary and desktop entry
   install -d -m755 "${pkgdir}/usr/bin"
@@ -51,7 +51,7 @@ package_intellij-idea-ultimate-edition-jre-bundled() {
   provides=("${pkgbase}-jre-meta")
 
   install -d -m755 "${pkgdir}/usr/share/${pkgbase}"
-  cp -r "${srcdir}/vendor-package/jre/." "${pkgdir}/usr/share/${pkgbase}/jre"
+  cp -a "${srcdir}/vendor-package/jre/." "${pkgdir}/usr/share/${pkgbase}/jre"
 }
 
 package_intellij-idea-ultimate-edition-jre-system() {
