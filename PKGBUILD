@@ -12,7 +12,6 @@ pkgdesc="An intelligent IDE for Java, Groovy and other programming languages wit
 arch=('any')
 url="https://www.jetbrains.com/idea/"
 license=('Commercial')
-makedepends=('rsync')
 options=(!strip)
 source=(
   "https://download.jetbrains.com/idea/ideaIU-${pkgver}.tar.gz"
@@ -24,7 +23,9 @@ sha256sums=(
 )
 
 build() {
-  mv "${srcdir}/idea-IU-"* "${srcdir}/vendor-package"
+  mkdir -p "${srcdir}/vendor-package"
+  mv "${srcdir}/idea-IU-"*"/jre" "${srcdir}/vendor-package/jre"
+  mv "${srcdir}/idea-IU-"* "${srcdir}/vendor-package/base"
 }
 
 package_intellij-idea-ultimate-edition() {
@@ -32,17 +33,16 @@ package_intellij-idea-ultimate-edition() {
   backup=("usr/share/${pkgbase}/bin/idea.vmoptions" "usr/share/${pkgbase}/bin/idea64.vmoptions" "usr/share/${pkgbase}/bin/idea.properties")
 
   install -d -m755 "${pkgdir}/usr/share/${pkgbase}"
-  rsync -rtl "${srcdir}/vendor-package/" "${pkgdir}/usr/share/${pkgbase}" \
-    --exclude=/jre
+  cp -r "${srcdir}/vendor-package/base/." "${pkgdir}/usr/share/${pkgbase}"
 
   # create binary and desktop entry
   install -d -m755 "${pkgdir}/usr/bin"
   ln -s "/usr/share/${pkgbase}/bin/idea.sh" "${pkgdir}/usr/bin/${pkgbase}"
   install -D -m644 "${srcdir}/jetbrains-idea.desktop" "${pkgdir}/usr/share/applications/jetbrains-idea.desktop"
-  install -D -m644 "${srcdir}/vendor-package/bin/idea.png" "${pkgdir}/usr/share/pixmaps/${pkgbase}.png"
+  install -D -m644 "${srcdir}/vendor-package/base/bin/idea.png" "${pkgdir}/usr/share/pixmaps/${pkgbase}.png"
 
   # workaround FS#40934
-  sed -i 's|lcd|on|'  "$pkgdir"/usr/share/"$pkgbase"/bin/*.vmoptions
+  sed -i 's|lcd|on|'  "${pkgdir}/usr/share/${pkgbase}/bin/"*".vmoptions"
 }
 
 package_intellij-idea-ultimate-edition-jre-bundled() {
@@ -51,7 +51,7 @@ package_intellij-idea-ultimate-edition-jre-bundled() {
   provides=("${pkgbase}-jre-meta")
 
   install -d -m755 "${pkgdir}/usr/share/${pkgbase}"
-  rsync -rtl "${srcdir}/vendor-package/jre/" "${pkgdir}/usr/share/${pkgbase}/jre"
+  cp -r "${srcdir}/vendor-package/jre/." "${pkgdir}/usr/share/${pkgbase}/jre"
 }
 
 package_intellij-idea-ultimate-edition-jre-system() {
